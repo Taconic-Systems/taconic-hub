@@ -1,0 +1,67 @@
+* Security Hub Modules
+
+This Nixos flake provides a set of modules for configuring security
+services for small companies.
+
+- Wireguard VPN Gateway
+- Sysadmin Accounts
+- Promethus Collector
+- Loki Collector
+- Graphana Server
+- Suricata NIDS and Flow Logging
+- NGINX Proxy Server  
+- SFTP Based backup server
+
+The module configuration is structured as a hierarchy.  Each sub-module has an `enable` option
+
+- taconic
+  - wireguard-vpn
+  - network-monitor
+  - log-server    
+  - admin
+  - nginx-proxy
+
+* Deployment
+
+** Initial Installation
+
+The [[https://nixos.wiki/wiki/NixOS_Installation_Guide][NixOS Installation Guide]] covers the core process.  It is suggested to use UEFI  and a GPT disk label if the system bios supports it.
+
+We have a nixosConfiguration that defines a custom installer.  It makes it a little easier 
+
+#+begin_src shell
+nix build .#nixosConfigurations.installer.config.system.build.isoImage
+#+end_src
+
+
+#+begin_src shell
+nixos-install --flake git+ssh://craig@garden/home/craig/projects/taconic-hub
+#+end_src
+
+** Updates
+
+#+begin_src shell
+nixos-rebuild switch --target-host HOST --use-remote-sudo
+#+end_src
+
+
+* Development
+
+** On NixOS
+
+Using [[https://nixos.wiki/wiki/NixOS_Containers][Native NixOS Containers]] via the =nixos-container= command to manage the supplied =container= nixosConfiguration is the easiest path.  Several targets are defined in the =Makefile=:
+
+To build derivation for the container, but not instantiate an instance of it, the =build= target can be used.
+
+#+begin_src shell
+make build
+#+end_src
+
+To create a systemd managed container that you can run on your host, the =create= target can be used.  This presumes that
+
+#+begin_src shell
+make create
+#+end_src
+
+To start the container, the =start= target will start the systemd
+container.  To get a root login, use the =root= target.

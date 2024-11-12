@@ -180,7 +180,7 @@ in
           protocol = "http";
           http_port = 3010;
           http_addr = "127.0.0.1";
-          rootUrl = "http://192.168.1.10:8010"; # helps with nginx / ws / live
+          #rootUrl = "http://:8010"; # helps with nginx / ws / live
         };
         #analytics.reporting.enable = false;
 

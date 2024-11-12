@@ -38,6 +38,8 @@ in
       sslCiphers = "AES256+EECDH:AES256+EDH:!aNULL";
       appendHttpConfig = ''
         log_format json_combined escape=json '{'
+          '"host":"$host",'
+          '"port":"$server_port",'
           '"time_local":"$time_local",'
           '"remote_addr":"$remote_addr",'
           '"request":"$request",'

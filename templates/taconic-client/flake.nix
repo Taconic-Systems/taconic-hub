@@ -8,7 +8,7 @@
 
     #hub.url = "github:Taconic-Systems/taconic-hub";
     hub = {
-      url = "github:/home/craig/projects/taconic-hub";
+      url = "github:Taconic-Systems/taconic-hub";
       # url = "github:Taconic-Systems/taconic-hub/unstable";
       # for local development of the hub, point to a local clone of the repo
       # url = "path:/home/craig/projects/taconic-hub";

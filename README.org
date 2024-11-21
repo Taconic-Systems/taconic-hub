@@ -32,6 +32,7 @@ Once you have nixos installed on a system, you can initialize a flake for managi
 #+begin_src shell
 mkdir sechub
 cd sechub
+nix flake init --template github:Taconic-Systems/taconic-hub#taconic-client
 cp /etc/nixos/hardware-configuration.nix nixosConfigurations/sechub/hardware-configuration.nix
 # Review the nixosConfigurations/sechub files
 # Test the build

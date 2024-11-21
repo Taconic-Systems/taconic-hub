@@ -23,7 +23,7 @@ in
     taconic.wireguard-vpn.externalInterface = mkOption {
       type = types.str;
       example = "eth0";
-      default = config.taconic.externalInterface;
+      default = config.taconic.internalInterface;
       description = "The network interface we will route outbound traffic too.";
     };
     taconic.wireguard-vpn.port = mkOption {
@@ -33,8 +33,12 @@ in
     };
     taconic.wireguard-vpn.serverIP = mkOption {
       type = types.str;
-      default = "10.100.0.1/24";
-      description = "An IP address in CIDR form for the interface.";
+      default = "10.10.10.1/24";
+      description = "The IP address and netmask, in CIDR form, for the server's interface on the VPN network.";
+    };
+    taconic.wireguard-vpn.vpnInterface = mkOption {
+      type = types.str;
+      default = "wg0";
     };
   };
 
@@ -46,7 +50,7 @@ in
 
     networking.nat.enable = true;
     networking.nat.externalInterface = cfg.externalInterface;
-    networking.nat.internalInterfaces = [ "wg0" ];
+    networking.nat.internalInterfaces = [ cfg.vpnInterface ];
 
     # allow the inconming UDP packets for WG clients
     networking.firewall = {
@@ -74,7 +78,6 @@ in
     };
     # quality of life tools
     environment.systemPackages = [
-      inputs.agenix.packages."${system}".default
       pkgs.age
       pkgs.wireguard-tools
       pkgs.iptables

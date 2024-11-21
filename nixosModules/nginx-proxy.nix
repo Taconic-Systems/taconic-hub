@@ -23,7 +23,7 @@ in
     taconic.nginx-proxy.acme-email = mkOption {
       type = types.str;
       description = "The email to use for Let's Encrypt certificates acquired via acme";
-      default = "craig@taconic.systems";
+      default = config.taconic.admin-email;
     };
   };
 
@@ -67,5 +67,4 @@ in
       443
     ];
   };
-
 }

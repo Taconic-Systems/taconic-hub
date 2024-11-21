@@ -26,19 +26,13 @@ in
 
   config = mkIf config.taconic.admin.enable {
 
-    taconic.craig.enable = true;
-
     environment.shells = [ pkgs.bashInteractive ];
 
+    nix.gc.automatic = true;
     nix.settings = {
-      trusted-users = [
-        "root"
-        "craig"
-      ];
-      allowed-users = [
-        "root"
-        "craig"
-      ];
+
+      trusted-users = [ "root" ];
+      allowed-users = [ "root" ];
       extra-nix-path = "nixpkgs=flake:nixpkgs";
       bash-prompt-prefix = "(nix:$name)\\040";
       auto-optimise-store = true;
@@ -71,7 +65,6 @@ in
 
     # quality of life tools
     environment.systemPackages = [
-      inputs.agenix.packages."${system}".default
       pkgs.age
       pkgs.htop
       pkgs.coreutils
@@ -87,6 +80,7 @@ in
       pkgs.nh
       pkgs.zstd
       pkgs.unzip
+      pkgs.vim
     ];
   };
 

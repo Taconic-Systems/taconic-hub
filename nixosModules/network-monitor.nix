@@ -19,6 +19,8 @@ let
 in
 {
 
+  # we need to import the service from unstable, as it is not in 24.05 yet
+  # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/networking/suricata/settings.nix
   imports = [ "${inputs.nixpkgs-unstable}/nixos/modules/services/networking/suricata" ];
 
   options = {
@@ -42,8 +44,8 @@ in
       };
       interface = mkOption {
         type = types.str;
-        description = "Interface to listen on";
-        example = "eth0";
+        description = "Interface to sniff";
+        default = config.taconic.internalInterface;
       };
     };
   };

@@ -20,37 +20,39 @@
 
   options = {
     taconic.enable = lib.mkEnableOption "Enable Taconic NixOS modules";
-    taconic.internalIp = lib.mkOption { type = lib.types.str; };
-    taconic.internalInterface = lib.mkOption {
+    taconic.admin-email = lib.mkOption {
       type = lib.types.str;
-      default = "wg0";
+      description = "Administrator email, should be a deliverable address.";
     };
-    taconic.externalIp = lib.mkOption {
+
+    taconic.internalIp = lib.mkOption {
       type = lib.types.str;
       default = "0.0.0.0";
+      description = "Our IP address on the internal network";
     };
-    taconic.externalInterface = lib.mkOption {
+
+    taconic.internalInterface = lib.mkOption {
       type = lib.types.str;
       default = "eth0";
+      description = "The interface connected to our internal network";
     };
+
   };
 
   config = {
 
     # each sub-module should be enabled here if it's part of the default set
     taconic.admin.enable = lib.mkDefault true;
+
     # Force use of nftables
-    networking.nftables.enable = true;
+    networking.nftables.enable = lib.mkDefault true;
+
+    # ipv6 off by default
+    networking.enableIPv6 = lib.mkDefault false;
 
   };
 
   # smtp relay
   # dns
 
-  #imports = [ ./configuration.nix ];
-  #imports = [ ../common.nix ];
-
-  # search for files in nix pkgs
-
-  # programs.nix-index.enable = true;
 }

@@ -24,11 +24,6 @@ in
       description = "The IP that log collection and aggregation services listen on.";
       default = config.taconic.internalIp;
     };
-    taconic.log-server.interfaceIp = mkOption {
-      type = types.str;
-      description = "The IP that aggregated log user interfaces listen on.";
-      default = config.taconic.internalIp;
-    };
   };
 
   config = mkIf cfg.enable {
@@ -287,11 +282,6 @@ in
       8031
     ];
 
-    # quality of life tools
-    environment.systemPackages = [
-      inputs.agenix.packages."${system}".default
-      #pkgs.lnav
-    ];
   };
 
 }

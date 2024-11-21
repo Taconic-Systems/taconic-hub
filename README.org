@@ -27,29 +27,60 @@ The module configuration is structured as a hierarchy.  Each sub-module has an `
 
 The [[https://nixos.wiki/wiki/NixOS_Installation_Guide][NixOS Installation Guide]] covers the core process.  It is suggested to use UEFI  and a GPT disk label if the system bios supports it.
 
-We have a nixosConfiguration that defines a custom installer.  It makes it a little easier 
+Once you have nixos installed on a system, you can initialize a flake for managing it using the =taconic-client= template.  You will need to copy your hosts hardware-configuration into the flake. 
 
 #+begin_src shell
-nix build .#nixosConfigurations.installer.config.system.build.isoImage
-#+end_src
-
-
-#+begin_src shell
-nixos-install --flake git+ssh://craig@garden/home/craig/projects/taconic-hub
+mkdir sechub
+cd sechub
+cp /etc/nixos/hardware-configuration.nix nixosConfigurations/sechub/hardware-configuration.nix
+# Review the nixosConfigurations/sechub files
+# Test the build
+nixos-rebuild build --flake .#sechub
+# Swith to this build
+nixos-rebuild switch --flake .#sechub
 #+end_src
 
 ** Updates
 
+*** Security Updates
+
+We track two variants of [[https://github.com/NixOS/nixpkgs][nixpkgs]] , the most recent release (24.05) and unstable.  When you first create your configuration flake, you will be locked to the commits on those two branches at that time.
+
+Nixpkgs will have security updates pushed to the release branch.  
+
 #+begin_src shell
-nixos-rebuild switch --target-host HOST --use-remote-sudo
+nix flake lock --update-input nixpkgs
 #+end_src
 
+The unstable branch gets all kinds of updates.  We use it for the
+=suricata= service until that makes it into the next release, so you
+only need to update that if a suricata security patch was released.
+If that happens, the same command but with the =nixpkgs-unstable=
+input will update the flake.lock as needed.
+
+*** Hub updates
+
+
+
+*** Deploying
+
+If you have a local configuration flake, while in the flake directory:
+
+#+begin_src shell
+sudo nixos-rebuild switch --flake .
+#+end_src
+
+If your configuration flake is being managed on a different host, You
+can push updates from there, provided you have ssh and sudo access to the target:
+#+begin_src shell
+nixos-rebuild switch --flake --target-host {{HOST}} --use-remote-sudo
+#+end_src
 
 * Development
 
 ** On NixOS
 
-Using [[https://nixos.wiki/wiki/NixOS_Containers][Native NixOS Containers]] via the =nixos-container= command to manage the supplied =container= nixosConfiguration is the easiest path.  Several targets are defined in the =Makefile=:
+Using [[https://nixos.wiki/wiki/NixOS_Containers][Native NixOS Containers]] via the =nixos-container= command to manage the supplied =container= nixosConfiguration is the easiest path  This presumes a bridge network, defaulting to incusbr0, but doesn't use incus.  The Makefile can be update to reflect your development system.  Bridge networking is only needed if you want to test the services.
 
 To build derivation for the container, but not instantiate an instance of it, the =build= target can be used.
 
@@ -65,3 +96,5 @@ make create
 
 To start the container, the =start= target will start the systemd
 container.  To get a root login, use the =root= target.
+
+As you iterate, the =update= target will update the container.  You may need to use the =restart= target on occasion to restart it entirely.

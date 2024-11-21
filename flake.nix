@@ -3,14 +3,8 @@
   inputs = {
     # We track the stable release as the default source for packages
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
-
     # We pull a small set of packages from unstable
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
-
-    # This is for managing secrets with age
-    # https://github.com/ryantm/agenix
-    agenix.url = "github:ryantm/agenix";
-
   };
 
   outputs =
@@ -18,27 +12,22 @@
       self,
       nixpkgs,
       nixpkgs-unstable,
-      agenix,
       ...
     }@inputs:
     let
       inherit (self) outputs;
       forAllSystems = nixpkgs.lib.genAttrs [
-        # "i686-linux"
         "aarch64-linux"
         "x86_64-linux"
-        #"aarch64-darwin"
-        #"x86_64-darwin"
       ];
-      inherit (inputs.nixpkgs.lib)
-        attrValues
-        makeOverridable
-        optionalAttrs
-        singleton
-        ;
     in
-    rec {
-
+    {
+      templates = {
+        taconic-client = {
+          path = ./templates/taconic-client;
+          description = "A template for Taconic Clients, this configure Taconic Systems access to the host.";
+        };
+      };
       # Your custom packages
       # Acessible through 'nix build', 'nix shell', etc
       packages = forAllSystems (
@@ -66,7 +55,6 @@
               gnupg
               nix-output-monitor
               nvd
-              agenix.packages."${system}".default
             ];
           };
         }
@@ -99,6 +87,7 @@
           };
           modules = [ ./nixosConfigurations/vm.nix ];
         };
+        # an experimental installer
         installer = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = {
@@ -109,14 +98,14 @@
           modules = [ ./nixosConfigurations/installer.nix ];
         };
 
-        silence = nixpkgs.lib.nixosSystem {
+        example = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";
           specialArgs = {
             system = "x86_64-linux";
             inherit inputs outputs;
             pkgs-unstable = nixpkgs-unstable.legacyPackages.x86_64-linux;
           };
-          modules = [ ./nixosConfigurations/silence ];
+          modules = [ ./nixosConfigurations/example ];
         };
       };
     };

@@ -88,15 +88,17 @@ in
       frequency = "daily";
       rotate = 3;
       missingok = true;
-      nocompress = true;
-      postrotate = "pkill -HUP -f bin/suricata";
+      compress = true;
+      delaycompress = true;
+      postrotate = "/run/current-system/sw/bin/suricatasc -c reopen-log-files /var/run/suricata/suricata-command.socket";
     };
     services.logrotate.settings."/var/log/suricata/eve-alerts.json" = {
       frequency = "daily";
       rotate = 3;
       missingok = true;
-      nocompress = true;
-      postrotate = "pkill -HUP -f bin/suricata";
+      compress = true;
+      delaycompress = true;
+      postrotate = "/run/current-system/sw/bin/suricatasc -c reopen-log-files /var/run/suricata/suricata-command.socket";
     };
 
     # quality of life tools

@@ -27,6 +27,8 @@
   taconic.log-server.enable = true;
 
   taconic.network-monitor.enable = true;
+  services.suricata.disabledRules = [ "*" ];
+  services.suricata.settings.host-mode = "sniffer-only";
 
   system.stateVersion = "24.05";
   # search for files in nix pkgs

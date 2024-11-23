@@ -127,6 +127,11 @@ in
 
     # promtail: port 3031 (8031)
     #
+    users.users.promtail.extraGroups = [
+      "nginx"
+      "suricata"
+    ];
+
     services.promtail = {
       enable = true;
       configuration = {
@@ -134,9 +139,6 @@ in
           http_listen_address = "127.0.0.1";
           http_listen_port = 3031;
           grpc_listen_port = 0;
-        };
-        positions = {
-          filename = "/tmp/positions.yaml";
         };
         clients = [
           {
@@ -157,6 +159,44 @@ in
               {
                 source_labels = [ "__journal__systemd_unit" ];
                 target_label = "unit";
+              }
+            ];
+          }
+          {
+            job_name = "nginx";
+            pipeline_stages = [ ];
+            static_configs = [
+              {
+                targets = [ "localhost" ];
+                labels = {
+                  job = "nginx-access-logs";
+                  __path__ = "/var/log/nginx/access.json";
+                  host = config.networking.hostName;
+                };
+              }
+              {
+                targets = [ "localhost" ];
+                labels = {
+                  job = "nginx-access-logs";
+                  __path__ = "/var/log/nginx/access.json";
+                  host = config.networking.hostName;
+                };
+              }
+              {
+                targets = [ "localhost" ];
+                labels = {
+                  job = "suricata-flow-logs";
+                  __path__ = "/var/log/suricata/eve-flow.json";
+                  host = config.networking.hostName;
+                };
+              }
+              {
+                targets = [ "localhost" ];
+                labels = {
+                  job = "suricata-alert-logs";
+                  __path__ = "/var/log/suricata/eve-alerts.json";
+                  host = config.networking.hostName;
+                };
               }
             ];
           }

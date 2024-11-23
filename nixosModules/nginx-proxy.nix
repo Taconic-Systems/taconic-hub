@@ -38,11 +38,15 @@ in
       sslCiphers = "AES256+EECDH:AES256+EDH:!aNULL";
       appendHttpConfig = ''
         log_format json_combined escape=json '{'
-          '"host":"$host",'
+          '"http_host":"$host",'
+          '"server_addr":"$server_addr",'
+          '"server_port":"$server_port",'
+          '"scheme":"$scheme",'
           '"port":"$server_port",'
           '"time_local":"$time_local",'
           '"remote_addr":"$remote_addr",'
-          '"request":"$request",'
+          '"request_method":"$request_method",'
+          '"request_uri":"$request_uri",'
           '"status": "$status",'
           '"body_bytes_sent":"$body_bytes_sent",'
           '"http_referer":"$http_referer",'
@@ -52,8 +56,8 @@ in
           '"upstream_addr":"$upstream_addr",'
           '"upstream_status":"$upstream_status"'
         '}';
-        error_log syslog:server=unix:/dev/log warn;
-        access_log syslog:server=unix:/dev/log json_combined;
+        error_log /var/log/nginx/error.log warn;
+        access_log /var/log/nginx/access.json json_combined;
       '';
     };
 

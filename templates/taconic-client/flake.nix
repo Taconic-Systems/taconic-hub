@@ -1,8 +1,7 @@
 {
   description = "Taconic Systems Security Hub Configuration";
   inputs = {
-    # We use the small stable nix channel by default
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05-small";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     # and have an unstable channel for bleeding edge packages
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 

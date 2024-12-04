@@ -1,4 +1,4 @@
-.PHONY: build create start update restart
+.PHONY: build create start root update restart
 
 CONTAINER_NAME=hubtest
 CONTAINER_CONFIG='./\#container'

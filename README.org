@@ -59,9 +59,13 @@ only need to update that if a suricata security patch was released.
 If that happens, the same command but with the =nixpkgs-unstable=
 input will update the flake.lock as needed.
 
-*** Hub updates
+To get all updates, you can run:
 
+#+begin_src shell
+nix flake update
+#+end_src
 
+You should review updates with care
 
 *** Deploying
 

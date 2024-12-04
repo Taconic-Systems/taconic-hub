@@ -2,7 +2,7 @@
   description = "A Flake the Taconic Systems security hub";
   inputs = {
     # We track the stable release as the default source for packages
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     # We pull a small set of packages from unstable
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
   };

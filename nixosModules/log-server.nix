@@ -118,7 +118,7 @@ in
 
         limits_config = {
           # 31 day retention is default
-          retention_period = "744h";
+          retention_period = lib.mkDefault "744h";
         };
 
       };
@@ -177,8 +177,8 @@ in
               {
                 targets = [ "localhost" ];
                 labels = {
-                  job = "nginx-access-logs";
-                  __path__ = "/var/log/nginx/access.json";
+                  job = "nginx-error-logs";
+                  __path__ = "/var/log/nginx/error.log";
                   host = config.networking.hostName;
                 };
               }

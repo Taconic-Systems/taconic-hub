@@ -80,7 +80,6 @@ in
     environment.systemPackages = [
       pkgs.age
       pkgs.wireguard-tools
-      pkgs.iptables
     ];
   };
 }

@@ -1,0 +1,505 @@
+#+TITLE Taconic Security Hub Operations Manual
+
+This manual is for operators and maintainers of Taconic Security Hub
+instances.  It presumes basic unix and IP networking skills.
+
+Essential Nix/NixOS Resources:
+  - [[https://nixos.org/][Nix Home]]
+  - [[https://nixos.org/learn/][Nix Learning Page]]
+  - [[https://nixos.org/manual/nixos/stable][NixOS Manual]]
+  - [[https://search.nixos.org/options][NixOS Options Search]]
+  - [[https://search.nixos.org/packages?][NixOS Package Search]] 
+  - [[https://www.youtube.com/watch?v=a67Sv4Mbxmc][VimJoyer's Ultimate NixOS Guide Video]]
+    
+* Installation
+
+The [[https://nixos.org/manual/nixos/stable/#ch-installation][NixOS Manual's Installation Chapter]] covers the core process.  It is suggested to use UEFI  and a GPT disk label if the system bios supports it.
+
+  - You must [[https://wiki.nixos.org/wiki/Flakes#Enable_flakes_permanently_in_NixOS][enable the flake experimental feature]] 
+  - The preferred filesystem is =ext4=
+  - The preferred boot manager is [[https://www.freedesktop.org/wiki/Software/systemd/systemd-boot/][=systemd-boot=]]
+  - The =/boot= partition, which will contain EFI images and kernels,
+    should be 1gb, to give us plenty of headroom for multiple
+    configurations.
+  - Use disk labels of =NXROOT= and =NIXBOOT= on the root and boot
+    partitions, and update the hardware configuration =fileSystems=
+    entries to use the =/dev/disk/by-label/= devices
+
+* Configuration
+
+Each sechub instance is meant to be managed as a [[https://wiki.nixos.org/wiki/Flakes#][flake]], using the
+=sechub= flake as an input.  The =nixos-rebuild= tool is then used to
+build, update, and test configurations.  These tools allow you to
+update the configuration of the server as an atomic operation, or
+rollback as needed.
+
+The flake is a directory that defines the exact packages (inputs) we will build the system with, as well as the configuration (nixosConfigurations) that will be run.  That includes defining the disks, users, networking, available programs and running services and their configuration.
+
+The =nixos-rebuild= program will =build= a set of derivations, or filesystem trees, from the flake, and merge them into a system configuration.  To do this, you need to be on a host with =nix= installed.  It does not need to be running =nixos=.  Since the flake defines all our inputs, we don't have to worry about which version of =nix= the host is running.  
+
+The tool can then =switch= to that configuration, turning on and off services, restarting those whose configuration has changed.  If there is a problem it can also =rollback= to the previous configuration.  It will copy the derivation and configuration to the target host if needed.
+
+This flexibility in where we host the flake, and where we build it lets us have two modes of managing a sechub instance:
+
+  - Local Management -- a flake in the =/etc/nixos= directory of the instance itself.  This is suggested for first timers.
+  - Remote Management -- a flake in a directory on a host running =nix= or =nixos= that has ssh access to an account on the sechub instance with sudo permissions
+
+You can initialize the using the =taconic-client= template.  You will need to copy your hosts hardware-configuration into the flake.
+
+#+begin_src shell
+cd /etc/nixos
+nix flake init --template github:Taconic-Systems/taconic-hub#taconic-client
+cp /etc/nixos/hardware-configuration.nix nixosConfigurations/sechub/hardware-configuration.nix
+#+end_src
+
+The =flake.nix= file defines the inputs for our system, including the
+release version of =nixpkgs= and =sechub= we will use.
+
+This flake contains a =nixosConfiguration= for a host named =sechub=
+in the =nixosConfiguration/sechub= directory.  The =default.nix= in
+that directory is the top level of the configuration.  This directory
+is where most of our configuration edits will happen.
+
+When making configuration changes, it is best to follow the following workflow:
+  - edit config files
+  - =build= the configuration
+  - =test= the configuration
+  - verify expected behavior, running services, and configuration
+  - Tell the system to =boot= into this configuration on reboot
+
+If making changes to ssh, network, or firewall services, be wary, as
+you may end up cutting off your access.  The workflow above allows you
+to reboot the server after the =test= phase if locked out.
+
+If you are feeling timid, you use the =nixos-rebuild dry-activate= command to get a list of changes prior to testing.
+  
+** Local Managed System
+*** Building
+#+begin_src shell
+# Review the nixosConfigurations/sechub files
+# Test the build
+nixos-rebuild build --flake .#sechub
+#+end_src
+
+*** Show Activation Steps
+#+begin_src shell
+# Review the nixosConfigurations/sechub files
+# Test the build
+nixos-rebuild dry-activate --flake .#sechub
+#+end_src
+
+*** Testing
+#+begin_src shell
+nixos-rebuild test --flake .#sechub
+#+end_src
+
+*** Updating Boot Target
+#+begin_src shell
+nixos-rebuild boot --flake .#sechub
+#+end_src
+
+*** Rollback Boot Target
+#+begin_src shell
+nixos-rebuild --rollback switch
+#+end_src
+
+*** Using Git for revision control
+
+It's good practice, especially if you have multiple administrators, to keep your flake in version control.  The =nixos= tooling will work well with git.  You can use =git init= to turn your flake directory into a git working copy.  If you do this, you will need to =git add= the top-level flake.nix and the nixosConfiguration directory and the contained .nix files.
+
+** Remote Managed System
+
+When executing =nixos-rebuild= we need to provide some additional arguments for the command other than =build=:
+
+  - --target-host <IP or hostname>
+  - --use-remote-sudo
+
+For example, to test the configuration on the remote hostf;
+#+begin_src shell
+nixos-rebuild test --flake .#sechub --target-host myhost --use-remote-sudo
+#+end_src
+  
+
+* Initial Configuration
+
+To enable the Taconic Security Hub,
+
+The =nixosConfigurations/sechub/default.nix= file has several entries
+which will need to be updated before your initial configuration
+deployment:
+
+  - =taconic.internalInterface= -- interface connected to your network
+  - =taconic.internalIp= -- IP of the sechub
+  - =taconic.admin-email= -- email of admins
+
+See the comments in the file and the [[#Networking][Networking]] section of this manual for guidance.  
+  
+* Users
+
+To add a user to the system, you uncomment and edit the entry in the =nixosConfigurations/sechub/users.nix= file.  For example:
+
+#+begin_src nix
+users.users.craig = {
+  isNormalUser = true;
+  createHome = true;
+  description = "Craig Brozefsky";
+  extraGroups = [
+    "wheel" # Enable ‘sudo’ for the user.
+  ];
+  openssh.authorizedKeys.keys = [
+    # ssh key bound to YubiKey
+    "sk-ssh-ed25519@openssh.com AAAAGnNrLXNzaC1lZDI1NTE5QG9wZW5zc2guY29tAAAAIJEShO6BZLGkS/+1NWrzgH+UN2sJVp+OeQJxNu0P2O1+AAAABHNzaDo= craig@taconic.systems"
+  ];
+};
+
+# allow user to do nixos-rebuild and other nix operations
+nix.settings = {
+  trusted-users = [ "craig" ];
+  allowed-users = [ "craig" ];
+};
+ 
+#+end_src
+
+The [[https://nixos.org/manual/nixos/stable/#sec-user-management][NixOS Manual's User Management chapter]] has more details on adding users, how their home directories are managed, and how to set their passwords.
+
+* Packages
+
+The sechub comes with a minimal set of installed packages.  In NixOS there are two ways to add packages.
+
+  - =programs.<program>.enable= NixOS options
+  - add to =environment.systemPackages= list
+
+You should use the `programs.<program>..enable` NixOS option if it is available.  You can use =man configuration.nix= or the [[https://search.nixos.org/options?show=programs.][NixOS Options Search]] to see if there is an option available.  This will install the package, and ensure that it is configured globally.
+
+Otherwise, adding the package name to =environment.systemPackages=
+will install it.  The [[https://search.nixos.org/packages?][NixOS Package Search]] is a convenient way to find
+packaged.  You can update this in the
+=nixosConfiguration/sechub/default.nix= file for example:
+
+#+begin_src nix
+  # install some useful programs
+  environment.systemPackages = [
+    pkgs.coreutils
+    pkgs.git
+    pkgs.curl
+    pkgs.vim
+  ];
+#+end_src
+
+The [[https://nixos.org/manual/nixos/stable/#sec-package-management][NixOS Manual's Package Management chapter]] has more detailed, including how to add unfree packages.
+
+* Networking
+
+** The Internal Network
+
+The =taconic.internalIp= should be bound on the
+=taconic.internalInterface=, and together they define the Internal
+Network.  This network should not be exposed to the internet, tho some ports may be forwarded too it.
+
+Since these are static configured values, you should either have a static lease defined in the DHCP server that configured the sechub, or you should use static network configuration in NixOS.
+
+[[https://nixos.org/manual/nixos/stable/#sec-networking][The NixOS Manual's Networking chapter]] contains details on static configuration of interfaces.
+
+** Firewall
+
+The =taconic= module enables the nftables firewall, and sub-modules
+will add their ports to the allow lists.
+
+The [[https://nixos.org/manual/nixos/stable/#sec-firewall][NixOS Manual's Firewall entry]] has more information on the use of the firewall.
+
+* Disks and Filesystems
+
+Several modules collect logs and data which can be quite large.  Most of that ends up in =/var/=.
+
+To add volumes, edit the =nixosConfigurations/sechub/hardware-configuration.nix=  to add filesystem entries.  You should label the volume, and use the label to mount it at the desired location.  For example, if you labeled  a disk DATA and wanted to mount it on var.
+
+#+begin_src nix
+  fileSystems."/data" = {
+    device = "/dev/disk/by-label/DATA";
+    fsType = "ext4";
+  };
+#+end_src
+
+The [[https://nixos.org/manual/nixos/stable/#ch-file-systems][NixOS Manual's Filesystem chapter]] has more details.
+
+* WireGuard VPN
+
+The sechub =taconic.wireguard-vpn= module will configure a [[https://www.wireguard.com/][WireGuard]] server that client can connect to for a secure, encrypted connection to the sechub AND the Internal Network.
+
+This VPN is intended for remote administration and access to services on the sechub instance.  It is not ended for non-admin users to get access to the network.  If such a VPN is needed, more restrictive firewall rules should be added to restrict access to the sechub.
+
+The VPN Network defaults to =10.10.10.0/24= with the server interface being assigned =taconic.wireguard-vpn.serverIP= address, which defaults to
+=10.10.10.1=.  The server interface defaults to "wg0" and can be set by =taconic.wireguard-vpn.interface=
+
+The module will generate a private key for the wg interface, and store it in =/etc/nixos/secrets/wg0.key=
+
+**WARNING:** Do not add the =/etc/nixos/secrets= directory to your source control repository.
+
+** Exposing the VPN Server Port
+
+The wireguard service listens on the **UDP** port,
+=taconic.wireguard-vpn.port=, which defaults to =51820=.  You will
+need to forward a port on a public server to an IP address on the
+server.  =taconic.internalIp= to make the server available to the
+world at large.
+
+** Listing Peers
+
+The =wg= command will list the public key of the server and the current configured peers, and their status.
+
+#+begin_example
+craig@silence:~]$ sudo wg
+interface: wg0
+  public key: NrvyNY12m8ExvOU65az4CIOdP7etalBnj2I1T+yKVgI=
+  private key: (hidden)
+  listening port: 51820
+
+peer: yW8PVCn5oPeH0plqfbO1fwMJX51CdB+qJzhSal0xgik=
+  allowed ips: 10.10.10.2/32
+#+end_example
+
+
+** Adding VPN Clents
+
+You can configure peers using the =networking.wireguard.interfaces.<interface>.peers= options.  
+
+#+begin_src nix
+  networking.wireguard.interfaces.wg0.peers = [
+    {
+      publicKey = "yW8PVCn5oPeH0plqfbO1fwMJX51CdB+qJzhSal0xgik=";
+      allowedIPs = [ "10.10.10.2/32" ];
+    }
+  ];
+
+#+end_src
+
+The [[https://wiki.nixos.org/wiki/WireGuard][NixOS Wiki's Wireguard entry]] has more information on configuration
+of peers.
+
+** Configuring Clients
+
+You will need the following to configure a client:
+  - public key of the VPN server's =wg= interface.  This is available via
+    the =sudo wg= command.
+  - assigned VPN network IP of the peer, eg. =10.10.10.2=
+  - The VPN Network segment , eg. =10.10.10.0/24=
+  - The IP address and port of the server is exposed to the internet,
+    typically the WAN address or or hostname of the router connecting to your
+    upstream ISP, eg. =myrouter.isp.com:51820=
+
+The configuration is often represented in the following "wg-quick" format:
+
+#+begin_example
+[Interface]
+PrivateKey = <private key generated on peer>
+ListenPort = 51820
+Address = 10.10.10.2/24
+# if the sechub is running a DNS server
+# DNS = 10.10.10.1
+
+[Peer]
+# sechub admin vpn
+PublicKey = <the public key of the VPN Server>
+Endpoint = myrouter.isp.com:51820
+# route traffic to internal network and VPN network thru peer
+AllowedIPs = 10.10.10.0/24 192.168.2.0/24
+# to route all traffic thru sechub
+# AllowedIPs = 0.0.0.0/0
+#+end_example
+
+Next you will need a client and possibly a UI for Wireguard for your client platform.
+
+Installation Instructions for all platforms are available here: https://www.wireguard.com/install/
+
+*** Linux
+
+On a laptop or workstation, you will likely use the NetworkManager GUI.
+
+Instructions for configurating that are available here:
+https://www.xmodulo.com/wireguard-vpn-network-manager-gui.html
+
+On a server, you would use the wireguard-tools, as documented here: https://ubuntu.com/server/docs/introduction-to-wireguard-vpn
+
+*** Mac
+
+The [[https://apps.apple.com/us/app/wireguard/id1441195209][WireGuard App]] in the App Store provides a client and UI for configurating and managing WG VPN connection.
+
+You will create a new VPN, and then can paste in the wg-quick configuration, preserving the private key that was generated for your device.
+
+*** Windows
+
+The Windows client is available at https://www.wireguard.com/install/
+
+You will create a new VPN, and then can paste in the wg-quick configuration, preserving the private key that was generated for your device.
+
+* Unified Logs
+
+The =taconic.log-server= module provides unified log collection and
+analysis with Loki for storage, and Grafana for analysis and alerting.
+
+The Loki server listens on localhost:3030 with an nginx proxy listening
+on port 8030 of =taconic.log-server.collectionIp=, which defaults to
+the =taconic.internalIp=.
+
+The Grafana server listens on localhost:3010 with an nginx proxy listening
+on port 8010 of =taconic.log-server.collectionIp=, which defaults to
+the =taconic.internalIp=.
+
+Grafana requires user authentication and comes with an 'admin' account with a default password of  'admin'
+
+**WARNING:** Remember to reset the Grafana password after installing.
+
+#+begin_src shell
+cd /var/lib/grafana
+grafana cli admin reset-admin-password <NEWPASS>
+#+end_src
+
+Loki stores log data is stored  in =/var/lib/loki= 
+
+The default log retention period is "744h" or 31 days.  This is tunable with the
+=services.loki.limits_config.retention_period= option.
+
+** Log Collection
+
+Logs are sent to the Loki service on the sechub using [[https://grafana.com/docs/loki/latest/send-data/promtail/][Promtail]] which can be configured to forward =journald= and regular log file contents.
+
+See the [[example-promtail.conf][example promtail.conf]] for Promtail configuration for common
+sources.
+
+*** systemd-journal logs
+
+Use the following labels:
+
+  - job: systemd-journal
+  - unit: <the systemd> -- in promtail this the "__journal__systemd_unit" source label
+  
+*** NGINX Logs
+
+Use the following labels:
+
+  - job: nginx-access-logs
+  - host: <server hostname>
+
+Formatting nginx logs as JSON allows for more sophisticated analysis in Grafana and elsewhere.
+
+
+#+begin_example
+log_format json_combined escape=json '{'
+  '"http_host":"$host",'
+  '"server_addr":"$server_addr",'
+  '"server_port":"$server_port",'
+  '"scheme":"$scheme",'
+  '"port":"$server_port",'
+  '"time_local":"$time_local",'
+  '"remote_addr":"$remote_addr",'
+  '"request_method":"$request_method",'
+  '"request_uri":"$request_uri",'
+  '"status": "$status",'
+  '"body_bytes_sent":"$body_bytes_sent",'
+  '"http_referer":"$http_referer",'
+  '"http_user_agent":"$http_user_agent",'
+  '"request_time":"$request_time",'
+  '"upstream_response_time":"$upstream_response_time",'
+  '"upstream_addr":"$upstream_addr",'
+  '"upstream_status":"$upstream_status"'
+'}';
+error_log /var/log/nginx/error.log warn;
+access_log /var/log/nginx/access.json json_combined;
+
+#+end_example
+
+*** Apache Logs
+
+Formatting apache access logs as JSON allows for more sophisticated analysis in Grafana and elsewhere.
+
+When configuring promtail, use the following labels:
+
+  - job: apache-access-logs
+  - host: <server hostname>
+
+Use 'mod_log_config' module to format access logs as json, adding the following to the top level config, or to each VirtualHost.
+
+#+begin_example
+LogFormat "{ \
+  \"http_host\": \"%v\", \
+  \"time\": \"%{%Y-%m-%dT%H:%M:%S%z}t\", \
+  \"remote_addr\": \"%a\", \
+  \"request_method\": \"%m\", \
+  \"request_uri\": \"%U\", \
+  \"query\": \"%q\", \
+  \"protocol\": \"%H\", \
+  \"status\": \"%>s\", \
+  \"bytes_sent\": \"%B\", \
+  \"http_referer\": \"%{Referer}i\", \
+  \"http_user_agent\": \"%{User-Agent}i\", \
+  \"response_time_microseconds\": \"%D\", \
+  \"forwarded_for\": \"%{X-Forwarded-For}i\", \
+  \"http_version\": \"%H\", \
+  \"request\": \"%r\" \
+}" json
+
+CustomLog ${APACHE_LOG_DIR}/access.log json
+#+end_example
+    
+** Log Analysis
+
+Log and metric analysis is provided via Grafana, which is listening on http://{taconic.internalIp}:8010
+
+* Metrics
+
+The =taconic.log-server= module provides unified metric collection and
+analysis with Prometheus for export, collection and storage, and
+Grafana for analysis and alerting.
+
+The Promethus server listens on localhost:3020 with an nginx proxy listening
+on port 8020 of =taconic.log-server.collectionIp=, which defaults to
+the =taconic.internalIp=.
+
+Prometheus stored it's data in =/var/lib/prometheus2=.  Use snapshots when making backups, or risk loss of data still in the
+WAL.
+https://prometheus.io/docs/prometheus/latest/querying/api/#snapshot
+
+
+** Metrics Collection
+
+Prometheus metric are pull based, so the sechub will be configured to connect to node exporters.
+
+You can configure a set of nodes to collect from in the =nixosConfiguration/sechub/default.nix= like so:
+
+#+begin_src nix
+services.prometheus.scrapeConfigs = [
+        {
+          job_name = "anothernode";
+          static_configs = [
+            { targets = [ "NODE_IP:EXPORTER_PORT" ]; }
+          ];
+        }
+];
+#+end_src
+
+*** Linux Clients
+
+The Prometheus Node Export is used to collect metrics on the host, and then export them thru a http service.  The sechub server then queries that to get metrics.
+
+The [[https://prometheus.io/docs/guides/node-exporter/][Promethus Node Exporter Guide]] has detailed instructions for configuring this exporter.
+
+** Metrics Analysis
+
+Metrics can be analyzed  analysis is provided via Grafana, which is listening on
+
+- Promethus Expression Browser: http://{taconic.internalIp}:8020
+- Graphana Explorer: http://{taconic.internalIp}:8010
+
+Both of these have excellent Help available from the UI.
+
+* Network Monitor
+
+The sechub =taconic.network-monitor= module  can be used to log network flows, and generate network traffic alerts using [[https://suricata.io/][Suricata]]
+
+The flows are logged as JSON in =/var/log/suricata=
+
+They are collected in Loki with the label "{job='suricata-flow-logs'}"
+
+* HTTP Proxy
+
+The =taconic.nginx-proxy= module configured a nginx instance with JSON access logging.  This proxy is used by other modules to expose services to the network.

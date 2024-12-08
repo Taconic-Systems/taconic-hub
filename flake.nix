@@ -1,5 +1,5 @@
 {
-  description = "A Flake the Taconic Systems security hub";
+  description = "A Flake for the Taconic Systems security hub";
   inputs = {
     # We track the stable release as the default source for packages
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
@@ -25,7 +25,7 @@
       templates = {
         taconic-client = {
           path = ./templates/taconic-client;
-          description = "A template for Taconic Clients, this configure Taconic Systems access to the host.";
+          description = "A template for Taconic Clients, be aware that this configures Taconic Systems access to the host.";
         };
       };
       # Your custom packages

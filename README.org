@@ -10,7 +10,7 @@ services for small companies.
 - Graphana Server
 - Suricata NIDS and Flow Logging
 - NGINX Proxy Server  
-- SFTP Based backup server
+- SSH Based backup server
 
 The module configuration is structured as a hierarchy.  Each sub-module has an `enable` option
 
@@ -26,6 +26,7 @@ The module configuration is structured as a hierarchy.  Each sub-module has an `
 ** Initial Installation
 
 The [[https://nixos.wiki/wiki/NixOS_Installation_Guide][NixOS Installation Guide]] covers the core process.  It is suggested to use UEFI  and a GPT disk label if the system bios supports it.
+
 
 Once you have nixos installed on a system, you can initialize a flake for managing it using the =taconic-client= template.  You will need to copy your hosts hardware-configuration into the flake. 
 
@@ -103,3 +104,7 @@ To start the container, the =start= target will start the systemd
 container.  To get a root login, use the =root= target.
 
 As you iterate, the =update= target will update the container.  You may need to use the =restart= target on occasion to restart it entirely.
+
+* Acknowledgments
+
+The log and metric services are based on the [[https://xeiaso.net/blog/prometheus-grafana-loki-nixos-2020-11-20/][How to Setup Prometheus, Grafana and Loki on NisOS]] article by [[https://xeiaso.net/][Xe Iaso]]

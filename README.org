@@ -1,12 +1,12 @@
 * Taconic Security Hub
 
-A Nixos flake providing modules and example configuration for a server providing basic security services for small organizations.
+A Nixos flake providing modules to build a basic security server for small organizations.
 
   - Unified Observability
-  - Unified Logging
-  - Network Monitoring
+  - Unified Logging and Log Analytics
+  - Network Monitoring and Alerting
   - WireGuard VPN For Administrators
-  - Off-host, Encypted Backups
+  - Encrypted Backup Server
 
 The module configuration is structured as a hierarchy.  Each sub-module has an `enable` option
 

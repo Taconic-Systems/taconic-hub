@@ -31,15 +31,8 @@ in
     # ports to our network.
 
     taconic.nginx-proxy.enable = true;
-    # MONITORING: services run on loopback interface
-    #             nginx reverse proxy exposes services to network
-    #             - grafana:3010
-    #             - prometheus:3020
-    #             - loki:3030
-    #             - promtail:3031
 
-    # prometheus: port 3020 (8020)
-    #
+    # promethud port 3020 (8020)
     services.prometheus = {
       port = 3020;
       listenAddress = "127.0.0.1";
@@ -53,7 +46,7 @@ in
         };
       };
 
-      # ingest the published nodes
+      # ingest from exporting nodes
       scrapeConfigs = [
         {
           job_name = "nodes";

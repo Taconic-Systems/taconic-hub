@@ -53,7 +53,7 @@ cp /etc/nixos/hardware-configuration.nix nixosConfigurations/sechub/hardware-con
 #+end_src
 
 The =flake.nix= file defines the inputs for our system, including the
-release version of =nixpkgs= and =sechub= we will use.
+release version of =nixpkgs= and =hub= we will use.
 
 This flake contains a =nixosConfiguration= for a host named =sechub=
 in the =nixosConfiguration/sechub= directory.  The =default.nix= in
@@ -134,6 +134,55 @@ deployment:
 
 See the comments in the file and the [[#Networking][Networking]] section of this manual for guidance.  
   
+* NixOS and Security Hub Updates
+
+To keep a sechub instance up to date, you must  update the flake inputs using the =nix flake= command.  Then we can follow the usual deployment process to build, test and deploy the updates.
+
+We track two variants of [[https://github.com/NixOS/nixpkgs][nixpkgs]] , the most recent release (24.11), as =nixpkgs= input,  and unstable, as =nixpkgs-unstable= input.  The first is where nearly all our packages and services come from, while unstable is there for pulling in new packages or if we need a update that has not been backported to the stable release.
+
+When you first create your configuration flake, you will be locked to the curent commits on those two branches at that time.  The exact commit and a 'narHash' is stored for the entire tree of inputs in the =flake.lock= file.
+
+** NixOS Security Updates
+
+The =nixpkgs= repository will have security updates pushed to the release branch that we track.  We can safely update this without pulling in unstable or incompatible changes.
+
+#+begin_src shell
+nix flake lock --update-input nixpkgs
+#+end_src
+
+** Taconic Security Hub Updates
+
+If new modules or patches are available for the Taconic Security Hub,
+you can update just that input with the following:
+
+#+begin_src shell
+nix flake lock --update-input hub
+#+end_src
+
+** Updating All Inputs
+
+To update all inputs, you can run:
+
+#+begin_src shell
+nix flake update
+#+end_src
+
+** Upgrading to a new NixOS Release
+
+NixOS releases are done twice a year, usually following the YY.MM
+pattern, so 24.11 means the release done in November of 2024.
+
+The release version is encoded in the =inputs.nixpkgs.url= option in the top-level =flake.nix= .
+
+#+begin_src nix
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+#+end_src
+
+Change the last component of that line to the new version number.  Then run
+=nix flake update --update-input nixpkgs= to update the =flake.lock=.  You can then proceed to build and test.  You are likely to run into some warnings about moved options or missing packages.
+
+You will also want to make sure that the =hub= input supports the new NixOS release, or you may get missing services or other odd behavior.
+
 * Users
 
 To add a user to the system, you uncomment and edit the entry in the =nixosConfigurations/sechub/users.nix= file.  For example:

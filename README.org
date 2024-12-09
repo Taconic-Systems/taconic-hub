@@ -46,4 +46,4 @@ As you iterate, the =update= target will update the container.  You may need to 
 
 * Acknowledgments
 
-The log and metric services are based on the [[https://xeiaso.net/blog/prometheus-grafana-loki-nixos-2020-11-20/][How to Setup Prometheus, Grafana and Loki on NisOS]] article by [[https://xeiaso.net/][Xe Iaso]]
+The log and metric services are based on the [[https://xeiaso.net/blog/prometheus-grafana-loki-nixos-2020-11-20/][How to Setup Prometheus, Grafana and Loki on NixOS]] article by [[https://xeiaso.net/][Xe Iaso]]

@@ -1,16 +1,12 @@
-* Security Hub Modules
+* Taconic Security Hub
 
-This Nixos flake provides a set of modules for configuring security
-services for small companies.
+A Nixos flake providing modules to build a basic security server for small organizations.
 
-- Wireguard VPN Gateway
-- Sysadmin Accounts
-- Promethus Collector
-- Loki Collector
-- Graphana Server
-- Suricata NIDS and Flow Logging
-- NGINX Proxy Server  
-- SFTP Based backup server
+  - Unified Observability
+  - Unified Logging and Log Analytics
+  - Network Monitoring and Alerting
+  - WireGuard VPN For Administrators
+  - Encrypted Backup Server
 
 The module configuration is structured as a hierarchy.  Each sub-module has an `enable` option
 
@@ -23,63 +19,7 @@ The module configuration is structured as a hierarchy.  Each sub-module has an `
 
 * Deployment
 
-** Initial Installation
-
-The [[https://nixos.wiki/wiki/NixOS_Installation_Guide][NixOS Installation Guide]] covers the core process.  It is suggested to use UEFI  and a GPT disk label if the system bios supports it.
-
-Once you have nixos installed on a system, you can initialize a flake for managing it using the =taconic-client= template.  You will need to copy your hosts hardware-configuration into the flake. 
-
-#+begin_src shell
-mkdir sechub
-cd sechub
-nix flake init --template github:Taconic-Systems/taconic-hub#taconic-client
-cp /etc/nixos/hardware-configuration.nix nixosConfigurations/sechub/hardware-configuration.nix
-# Review the nixosConfigurations/sechub files
-# Test the build
-nixos-rebuild build --flake .#sechub
-# Swith to this build
-nixos-rebuild switch --flake .#sechub
-#+end_src
-
-** Updates
-
-*** Security Updates
-
-We track two variants of [[https://github.com/NixOS/nixpkgs][nixpkgs]] , the most recent release (24.05) and unstable.  When you first create your configuration flake, you will be locked to the commits on those two branches at that time.
-
-Nixpkgs will have security updates pushed to the release branch.  
-
-#+begin_src shell
-nix flake lock --update-input nixpkgs
-#+end_src
-
-The unstable branch gets all kinds of updates.  We use it for the
-=suricata= service until that makes it into the next release, so you
-only need to update that if a suricata security patch was released.
-If that happens, the same command but with the =nixpkgs-unstable=
-input will update the flake.lock as needed.
-
-To get all updates, you can run:
-
-#+begin_src shell
-nix flake update
-#+end_src
-
-You should review updates with care
-
-*** Deploying
-
-If you have a local configuration flake, while in the flake directory:
-
-#+begin_src shell
-sudo nixos-rebuild switch --flake .
-#+end_src
-
-If your configuration flake is being managed on a different host, You
-can push updates from there, provided you have ssh and sudo access to the target:
-#+begin_src shell
-nixos-rebuild switch --flake --target-host {{HOST}} --use-remote-sudo
-#+end_src
+See the  [[docs/operations.org][Operations Manual]]
 
 * Development
 
@@ -103,3 +43,7 @@ To start the container, the =start= target will start the systemd
 container.  To get a root login, use the =root= target.
 
 As you iterate, the =update= target will update the container.  You may need to use the =restart= target on occasion to restart it entirely.
+
+* Acknowledgments
+
+The log and metric services are based on the [[https://xeiaso.net/blog/prometheus-grafana-loki-nixos-2020-11-20/][How to Setup Prometheus, Grafana and Loki on NixOS]] article by [[https://xeiaso.net/][Xe Iaso]]

@@ -2,7 +2,6 @@
   inputs,
   config,
   pkgs,
-  pkgs-unstable,
   system,
   lib,
   ...
@@ -18,10 +17,6 @@ let
   cfg = config.taconic.network-monitor;
 in
 {
-
-  # we need to import the service from unstable, as it is not in 24.05 yet
-  # https://github.com/NixOS/nixpkgs/blob/master/nixos/modules/services/networking/suricata/settings.nix
-  #imports = [ "${inputs.nixpkgs-unstable}/nixos/modules/services/networking/suricata" ];
 
   options = {
 
@@ -54,7 +49,6 @@ in
 
     services.suricata = {
       enable = true;
-      #package = pkgs-unstable.suricata;
       settings = {
         unix-command.enabled = true;
         outputs = [

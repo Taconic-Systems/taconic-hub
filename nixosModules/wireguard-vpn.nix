@@ -36,7 +36,7 @@ in
       default = "10.10.10.1/24";
       description = "The IP address and netmask, in CIDR form, for the server's interface on the VPN network.";
     };
-    taconic.wireguard-vpn.vpnInterface = mkOption {
+    taconic.wireguard-vpn.interface = mkOption {
       type = types.str;
       default = "wg0";
     };
@@ -50,7 +50,7 @@ in
 
     networking.nat.enable = true;
     networking.nat.externalInterface = cfg.externalInterface;
-    networking.nat.internalInterfaces = [ cfg.vpnInterface ];
+    networking.nat.internalInterfaces = [ cfg.interface ];
 
     # allow the inconming UDP packets for WG clients
     networking.firewall = {
@@ -80,7 +80,6 @@ in
     environment.systemPackages = [
       pkgs.age
       pkgs.wireguard-tools
-      pkgs.iptables
     ];
   };
 }

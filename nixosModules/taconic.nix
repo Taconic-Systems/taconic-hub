@@ -41,11 +41,13 @@
 
   config = {
 
-    # each sub-module should be enabled here if it's part of the default set
+    # each sub-module should be enabled here if it's part of the
+    # default set, which should be kept minimal
     taconic.admin.enable = lib.mkDefault true;
 
     # Force use of nftables
-    networking.nftables.enable = lib.mkDefault true;
+    networking.firewall.enable = true;
+    networking.nftables.enable = true;
 
     # ipv6 off by default
     networking.enableIPv6 = lib.mkDefault false;

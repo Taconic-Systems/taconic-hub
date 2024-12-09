@@ -1,4 +1,9 @@
-{ inputs, sops-nix, ... }:
+{
+  inputs,
+  sops-nix,
+  pkgs,
+  ...
+}:
 {
 
   imports = [
@@ -6,6 +11,7 @@
     # You should copy the hardware-configuration.nix from your
     # target system
     ./hardware-configuration.nix
+    ./users.nix
     sops-nix.nixosModules.sops
     inputs.hub.nixosModules.taconic
   ];
@@ -32,6 +38,14 @@
       publicKey = "yW8PVCn5oPeH0plqfbO1fwMJX51CdB+qJzhSal0xgik=";
       allowedIPs = [ "10.10.10.2/32" ];
     }
+  ];
+
+  # install some useful programs
+  environment.systemPackages = [
+    pkgs.coreutils
+    pkgs.git
+    pkgs.curl
+    pkgs.vim
   ];
 
   taconic.log-server.enable = true;

@@ -5,6 +5,14 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
     # We pull a small set of packages from unstable
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+
+    bub-nix = {
+      # we want to track the 24.11 release
+      url = "path:/home/craig/projects/bub";
+      #url = "github:Taconic-Systems/bub";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   outputs =
@@ -12,6 +20,7 @@
       self,
       nixpkgs,
       nixpkgs-unstable,
+      bub-nix,
       ...
     }@inputs:
     let
@@ -61,7 +70,7 @@
       );
 
       nixosModules = {
-        taconic = import ./nixosModules/taconic.nix;
+        taconic = import ./nixosModules/taconic.nix { };
         default = self.nixosModules.taconic;
       };
 

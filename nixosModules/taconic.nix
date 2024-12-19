@@ -1,21 +1,16 @@
 {
-  inputs,
-  config,
-  pkgs,
-  pkgs-unstable,
-  system,
   lib,
   ...
 }:
 {
-
   imports = [
     ./admin.nix
     ./nginx-proxy.nix
     ./wireguard-vpn.nix
     ./log-server.nix
     ./network-monitor.nix
-    #./backup-server.nix
+    ./backup-server.nix
+    ./backup-client.nix
   ];
 
   options = {

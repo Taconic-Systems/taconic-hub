@@ -57,6 +57,12 @@
   services.suricata.disabledRules = [ "*" ];
   services.suricata.settings.host-mode = "sniffer-only";
 
+  taconic.backup-server.enable = true;
+  taconic.backup-client.enable = true;
+  # example for adding ssh access to backup clients to the "bub"
+  # backup services
+  # services.bub-server.users.bub.keys = ["sshpubkey"];
+
   system.stateVersion = "24.05";
 
 }

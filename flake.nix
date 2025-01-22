@@ -8,8 +8,8 @@
 
     bub-nix = {
       # we want to track the 24.11 release
-      url = "path:/home/craig/projects/bub";
-      #url = "github:Taconic-Systems/bub";
+      #url = "path:/home/craig/projects/bub";
+      url = "github:Taconic-Systems/bub";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -20,7 +20,6 @@
       self,
       nixpkgs,
       nixpkgs-unstable,
-      bub-nix,
       ...
     }@inputs:
     let
@@ -70,7 +69,7 @@
       );
 
       nixosModules = {
-        taconic = import ./nixosModules/taconic.nix { };
+        taconic = ./nixosModules/taconic.nix;
         default = self.nixosModules.taconic;
       };
 
@@ -85,7 +84,10 @@
             inherit inputs outputs;
             pkgs-unstable = nixpkgs-unstable.legacyPackages.x86_64-linux;
           };
-          modules = [ ./nixosConfigurations/container.nix ];
+          modules = [
+            ./nixosConfigurations/container.nix
+
+          ];
         };
         vm = nixpkgs.lib.nixosSystem {
           system = "x86_64-linux";

@@ -1,7 +1,6 @@
 {
   inputs,
   config,
-  lib,
   pkgs,
   ...
 }:
@@ -28,7 +27,7 @@ in
         ];
       }
     )
-    "${inputs.bub-nix}/nixosModules/bub-server.nix"
+    inputs.bub-nix.nixosModules.bub-server
   ];
 
   config = mkIf cfg.enable {

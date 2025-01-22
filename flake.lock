@@ -7,23 +7,26 @@
         ]
       },
       "locked": {
-        "lastModified": 1734568001,
-        "narHash": "sha256-CDmYubflfNw3ZYDZ/nLdzLjA8VQbzqmbnITzy7rEFwA=",
-        "path": "/home/craig/projects/bub",
-        "type": "path"
+        "lastModified": 1737584660,
+        "narHash": "sha256-BKv2VC5JRA1SBwH6uN9q2zhDyCk48SZMCnFlX7o94jc=",
+        "owner": "Taconic-Systems",
+        "repo": "bub",
+        "rev": "d7ff6b49c8c1331aa2cfb9f53949b1d2f4a4ce93",
+        "type": "github"
       },
       "original": {
-        "path": "/home/craig/projects/bub",
-        "type": "path"
+        "owner": "Taconic-Systems",
+        "repo": "bub",
+        "type": "github"
       }
     },
     "nixpkgs": {
       "locked": {
-        "lastModified": 1734323986,
-        "narHash": "sha256-m/lh6hYMIWDYHCAsn81CDAiXoT3gmxXI9J987W5tZrE=",
+        "lastModified": 1737404927,
+        "narHash": "sha256-e1WgPJpIYbOuokjgylcsuoEUCB4Jl2rQXa2LUD6XAG8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "394571358ce82dff7411395829aa6a3aad45b907",
+        "rev": "ae584d90cbd0396a422289ee3efb1f1c9d141dc3",
         "type": "github"
       },
       "original": {
@@ -35,11 +38,11 @@
     },
     "nixpkgs-unstable": {
       "locked": {
-        "lastModified": 1734435836,
-        "narHash": "sha256-kMBQ5PRiFLagltK0sH+08aiNt3zGERC2297iB6vrvlU=",
+        "lastModified": 1737525964,
+        "narHash": "sha256-3wFonKmNRWKq1himW9N3TllbeGIHFACI5vmLpk6moF8=",
         "owner": "NixOS",
         "repo": "nixpkgs",
-        "rev": "4989a246d7a390a859852baddb1013f825435cee",
+        "rev": "5757bbb8bd7c0630a0cc4bb19c47e588db30b97c",
         "type": "github"
       },
       "original": {

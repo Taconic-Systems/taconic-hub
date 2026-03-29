@@ -1,7 +1,7 @@
 {
   description = "Taconic Systems Security Hub Configuration";
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.11";
     # and have an unstable channel for bleeding edge packages
     nixpkgs-unstable.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
 
